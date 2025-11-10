@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Comparação: Busca Linear vs Busca Binária</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; }
+  table { border-collapse: collapse; width: 60%; margin-top: 20px; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+  th { background-color: #f2f2f2; }
+  button { padding: 8px 15px; margin-top: 10px; }
+</style>
+</head>
+<body>
+  <h2>Comparação de Desempenho: Busca Linear vs Busca Binária</h2>
+  <p>Executa as duas buscas para vetores de tamanhos crescentes e mede o tempo de execução (em milissegundos).</p>
+  <button onclick="executar()">Executar Testes</button>
+  <table id="tabela">
+    <thead>
+      <tr>
+        <th>Tamanho</th>
+        <th>Tempo Linear (ms)</th>
+        <th>Tempo Binária (ms)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+<script>
+function buscaLinear(arr, alvo) {
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i] === alvo) return i;
+  }
+  return -1;
+}
+
+function buscaBinaria(arr, alvo) {
+  let inicio = 0, fim = arr.length - 1;
+  while (inicio <= fim) {
+    let meio = Math.floor((inicio + fim) / 2);
+    if (arr[meio] === alvo) return meio;
+    if (arr[meio] < alvo) inicio = meio + 1;
+    else fim = meio - 1;
+  }
+  return -1;
+}
+
+function executar() {
+  const tamanhos = [10, 100, 1000, 10000, 100000, 1000000];
+  const tabela = document.getElementById("tabela").querySelector("tbody");
+  tabela.innerHTML = "";
+
+  tamanhos.forEach(n => {
+    const vetor = Array.from({ length: n }, (_, i) => i);
+    const alvo = n - 1; 
+
+    let inicio = performance.now();
+    buscaLinear(vetor, alvo);
+    let fim = performance.now();
+    let tempoLinear = fim - inicio;
+
+    inicio = performance.now();
+    buscaBinaria(vetor, alvo);
+    fim = performance.now();
+    let tempoBinaria = fim - inicio;
+
+    const linha = `<tr>
+      <td>${n.toLocaleString()}</td>
+      <td>${tempoLinear.toFixed(6)}</td>
+      <td>${tempoBinaria.toFixed(6)}</td>
+    </tr>`;
+    tabela.innerHTML += linha;
+  });
+}
+</script>
+</body>
+</html>
+

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula 04 — Mochila Fracionária</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f9f9f9; color: #222; margin: 40px; line-height: 1.5; }
+  h1 { color: #0a4d8c; }
+  pre { background: #f4f4f4; padding: 12px; border-radius: 6px; border: 1px solid #ddd; overflow-x: auto; }
+  table { border-collapse: collapse; width: 60%; margin-top: 15px; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+  th { background: #0a4d8c; color: white; }
+  .analise { background: #eef6ff; padding: 14px; border-left: 5px solid #0a4d8c; border-radius: 6px; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<h1>Aula 04 — Mochila Fracionária</h1>
+
+<h2>Código Java</h2>
+<pre><code>import java.util.Arrays;
+import java.util.Comparator;
+
+public class MochilaFracionaria {
+    public static void main(String[] args) {
+        int capacidade = 50;
+        int[] pesos = {10, 20, 30};
+        int[] valores = {60, 100, 120};
+        int n = valores.length;
+
+        double[][] itens = new double[n][3];
+        for (int i = 0; i &lt; n; i++) {
+            itens[i][0] = pesos[i];
+            itens[i][1] = valores[i];
+            itens[i][2] = (double) valores[i] / pesos[i];
+        }
+
+        Arrays.sort(itens, Comparator.comparingDouble(o -> -o[2]));
+
+        double valorMaximo = 0;
+        int capacidadeRestante = capacidade;
+
+        for (int i = 0; i &lt; n; i++) {
+            if (capacidadeRestante &gt;= itens[i][0]) {
+                valorMaximo += itens[i][1];
+                capacidadeRestante -= itens[i][0];
+            } else {
+                valorMaximo += itens[i][1] * ((double) capacidadeRestante / itens[i][0]);
+                break;
+            }
+        }
+
+        System.out.println("Valor máximo obtido: " + valorMaximo);
+    }
+}</code></pre>
+
+<h2>Exemplo de Itens</h2>
+<table>
+  <tr><th>Peso</th><th>Valor</th><th>Valor/Peso</th></tr>
+  <tr><td>10</td><td>60</td><td>6.0</td></tr>
+  <tr><td>20</td><td>100</td><td>5.0</td></tr>
+  <tr><td>30</td><td>120</td><td>4.0</td></tr>
+</table>
+
+<div class="analise">
+  <h2>Análise</h2>
+  <p>O algoritmo escolhe itens com base na maior razão <strong>valor/peso</strong>, preenchendo a mochila até atingir a capacidade.</p>
+  <p>Essa é uma solução <strong>gulosa</strong> e eficiente, pois sempre prioriza o melhor benefício por unidade de peso.</p>
+  <p><strong>Complexidade:</strong> O(n log n), devido à ordenação inicial.</p>
+  <p><strong>Resultado:</strong> Com capacidade 50, o valor máximo obtido é <strong>240.0</strong>.</p>
+</div>
+
+</body>
+</html>

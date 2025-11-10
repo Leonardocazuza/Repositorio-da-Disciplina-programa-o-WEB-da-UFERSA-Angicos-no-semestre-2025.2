@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula 03 — Cálculo de Troco</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f9f9f9; color: #222; margin: 40px; line-height: 1.5; }
+  h1 { color: #0a4d8c; }
+  pre { background: #f4f4f4; padding: 12px; border-radius: 6px; border: 1px solid #ddd; overflow-x: auto; }
+  table { border-collapse: collapse; width: 50%; margin-top: 15px; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+  th { background: #0a4d8c; color: white; }
+  .analise { background: #eef6ff; padding: 14px; border-left: 5px solid #0a4d8c; border-radius: 6px; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<h1>Aula 03 — Cálculo de Troco</h1>
+
+<h2>Código Java</h2>
+<pre><code>public class Troco {
+    public static void main(String[] args) {
+        int[] cedulasDisponiveis = {50, 20, 10, 5, 2, 1};
+        int trocoPara = 93;
+        int[] cedulasUsadas = new int[cedulasDisponiveis.length];
+
+        for (int i = 0; i &lt; cedulasDisponiveis.length; i++) {
+            if (trocoPara &gt;= cedulasDisponiveis[i]) {
+                cedulasUsadas[i] = trocoPara / cedulasDisponiveis[i];
+                trocoPara = trocoPara % cedulasDisponiveis[i];
+            }
+        }
+
+        System.out.println("Cédulas usadas:");
+        for (int i = 0; i &lt; cedulasDisponiveis.length; i++) {
+            if (cedulasUsadas[i] &gt; 0) {
+                System.out.println("R$ " + cedulasDisponiveis[i] + ",00 -> " + cedulasUsadas[i] + " cédula(s)");
+            }
+        }
+    }
+}</code></pre>
+
+<h2>Exemplo de Saída</h2>
+<table>
+  <tr><th>Cédula</th><th>Quantidade</th></tr>
+  <tr><td>R$ 50</td><td>1</td></tr>
+  <tr><td>R$ 20</td><td>2</td></tr>
+  <tr><td>R$ 2</td><td>1</td></tr>
+  <tr><td>R$ 1</td><td>1</td></tr>
+</table>
+
+<div class="analise">
+  <h2>Análise</h2>
+  <p>O código percorre as cédulas da maior para a menor, utilizando o método <strong>ganancioso</strong> (greedy),
+  que sempre escolhe a maior cédula possível primeiro.</p>
+
+  <p>Essa abordagem garante o menor número total de cédulas e é eficiente para sistemas monetários comuns.</p>
+
+  <p><strong>Complexidade:</strong> O algoritmo é <strong>O(n)</strong>, pois percorre o vetor de cédulas apenas uma vez.</p>
+
+  <p><strong>Conclusão:</strong> A solução é simples, rápida e garante um troco otimizado.</p>
+</div>
+
+</body>
+</html>
