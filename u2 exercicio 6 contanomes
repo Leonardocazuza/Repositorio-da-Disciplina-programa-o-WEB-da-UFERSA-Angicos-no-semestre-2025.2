@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Contar Nomes</title>
+</head>
+<body>
+    <h2>Contar Repetições de Nomes</h2>
+
+    <textarea id="nomes" rows="10" cols="40" placeholder="Cole aqui os nomes, um por linha"></textarea>
+    <br><br>
+
+    <button onclick="contarNomes()">Contar</button>
+
+    <h3>Resultado:</h3>
+    <pre id="resultado"></pre>
+
+    <script>
+        function contarNomes() {
+            let texto = document.getElementById("nomes").value;
+            let linhas = texto.split("\n");
+            let contagem = {};
+
+            linhas.forEach(nome => {
+                nome = nome.trim();
+                if (nome === "") return;
+
+                if (!contagem[nome]) {
+                    contagem[nome] = 1;
+                } else {
+                    contagem[nome]++;
+                }
+            });
+
+            let resultado = "";
+            for (let nome in contagem) {
+                resultado += nome + " = " + contagem[nome] + "\n";
+            }
+
+            document.getElementById("resultado").textContent = resultado;
+        }
+    </script>
+</body>
+</html>
