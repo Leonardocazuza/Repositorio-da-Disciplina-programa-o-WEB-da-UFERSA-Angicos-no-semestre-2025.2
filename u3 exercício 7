@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Árvore Binária em HTML</title>
+</head>
+<body>
+    <h2>Árvore Binária - Inserção e Percursos</h2>
+
+    <pre id="arvore"></pre>
+
+    <h3>Percursos</h3>
+    <p><b>Pré-ordem:</b> <span id="pre"></span></p>
+    <p><b>Em-ordem:</b> <span id="em"></span></p>
+    <p><b>Pós-ordem:</b> <span id="pos"></span></p>
+
+    <script>
+        // ======= CLASSE NODE =======
+        class Node {
+            constructor(valor) {
+                this.valor = valor;
+                this.esquerdo = null;
+                this.direito = null;
+            }
+        }
+
+        // ======= ÁRVORE BINÁRIA =======
+        class ArvoreBinaria {
+            constructor(valores) {
+                this.raiz = null;
+                valores.forEach(v => this.raiz = this.inserir(this.raiz, v));
+            }
+
+            inserir(no, valor) {
+                if (no === null) return new Node(valor);
+
+                if (valor < no.valor)
+                    no.esquerdo = this.inserir(no.esquerdo, valor);
+                else
+                    no.direito = this.inserir(no.direito, valor);
+
+                return no;
+            }
+
+            // Mostrar árvore
+            mostrarArvore() {
+                let resultado = "";
+                const mostrarNo = (no, nivel) => {
+                    if (no === null) return;
+
+                    mostrarNo(no.direito, nivel + 1);
+
+                    resultado += "     ".repeat(nivel) + no.valor + "\n";
+
+                    mostrarNo(no.esquerdo, nivel + 1);
+                };
+
+                mostrarNo(this.raiz, 0);
+                return resultado;
+            }
+
+            // Percursos
+            preOrdem(no, lista = []) {
+                if (no === null) return;
+                lista.push(no.valor);
+                this.preOrdem(no.esquerdo, lista);
+                this.preOrdem(no.direito, lista);
+                return lista;
+            }
+
+            emOrdem(no, lista = []) {
+                if (no === null) return;
+                this.emOrdem(no.esquerdo, lista);
+                lista.push(no.valor);
+                this.emOrdem(no.direito, lista);
+                return lista;
+            }
+
+            posOrdem(no, lista = []) {
+                if (no === null) return;
+                this.posOrdem(no.esquerdo, lista);
+                this.posOrdem(no.direito, lista);
+                lista.push(no.valor);
+                return lista;
+            }
+        }
+
+        // ======= 25 VALORES =======
+        const valores = [10, 5, 15, 3, 7, 12, 18, 1, 4, 6, 8, 11, 13, 17, 20,
+                         2, 9, 14, 16, 19, 21, 22, 23, 24, 25];
+
+        const arvore = new ArvoreBinaria(valores);
+
+        // Mostrar resultados
+        document.getElementById("arvore").textContent = arvore.mostrarArvore();
+        document.getElementById("pre").textContent = arvore.preOrdem(arvore.raiz).join(", ");
+        document.getElementById("em").textContent = arvore.emOrdem(arvore.raiz).join(", ");
+        document.getElementById("pos").textContent = arvore.posOrdem(arvore.raiz).join(", ");
+    </script>
+
+</body>
+</html>
