@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Revisão de Algoritmos — Bubble / Selection / Merge (HTML)</title>
+<style>
+  :root{
+    --bg:#0f1724; --card:#0b1220; --accent:#6ee7b7; --muted:#9aa4b2;
+    --glass: rgba(255,255,255,0.03);
+  }
+  html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+  body{background:linear-gradient(180deg,#071428 0%, #07182b 100%);color:#e6eef6;padding:18px;box-sizing:border-box;}
+  .container{max-width:1100px;margin:0 auto;}
+  header{display:flex;gap:16px;align-items:center;margin-bottom:18px;}
+  h1{margin:0;font-size:20px;color:var(--accent)}
+  .grid{display:grid;grid-template-columns:1fr 420px;gap:16px;}
+  .card{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.03);}
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  input,select,button{width:100%;padding:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.04);color:#e6eef6}
+  .row{display:flex;gap:8px}
+  .row > *{flex:1}
+  button{cursor:pointer}
+  .small{padding:6px;font-size:13px}
+  pre{background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:10px;border-radius:8px;overflow:auto;color:#cfeff0}
+  table{width:100%;border-collapse:collapse;margin-top:8px;color:#e6eef6}
+  th,td{padding:6px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.03);font-size:13px}
+  canvas{width:100%;height:220px;border-radius:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);}
+  footer{margin-top:12px;color:var(--muted);font-size:13px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap}
+  .muted{color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Revisão de Algoritmos — Bubble, Selection e Merge (HTML)</h1>
+      <div class="muted">Teste prático e comparação de tempos</div>
+    </header>
+
+    <div class="grid">
+      <!-- LEFT: Controls and results -->
+      <div class="card">
+        <label>Vetor (valores separados por vírgula)</label>
+        <input id="arrayInput" placeholder="Ex.: 64,34,25,12,22,11,90" />
+
+        <div style="height:8px"></div>
+
+        <div class="row">
+          <button id="generateBtn" class="small">Gerar aleatório</button>
+          <button id="resetBtn" class="small">Limpar</button>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <label>Opções de benchmark</label>
+        <div class="row">
+          <input id="sizeInput" type="number" value="1000" min="5" />
+          <input id="repeatInput" type="number" value="5" min="1" />
+        </div>
+
+        <div style="height:8px"></div>
+
+        <div class="controls">
+          <button id="runSingle" class="small">Rodar uma vez (usar vetor atual)</button>
+          <button id="runBenchmark" class="small">Rodar benchmark (vários tamanhos)</button>
+          <button id="showArrays" class="small">Mostrar vetor antes/depois</button>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div id="status" class="muted">Status: pronto</div>
+
+        <hr style="opacity:0.06;margin:12px 0">
+
+        <div>
+          <strong>Tempos (ms)</strong>
+          <table id="timesTable">
+            <thead>
+              <tr><th>Algoritmo</th><th>Tempo (ms)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Bubble Sort</td><td id="bubbleTime">-</td></tr>
+              <tr><td>Selection Sort</td><td id="selectionTime">-</td></tr>
+              <tr><td>Merge Sort</td><td id="mergeTime">-</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="height:8px"></div>
+        <button id="downloadCsv" class="small">Exportar resultados (.csv)</button>
+
+      </div>
+
+      <!-- RIGHT: Visualization -->
+      <div class="card">
+        <label>Gráfico comparativo — tempos médios (ms)</label>
+        <canvas id="chart" width="800" height="220"></canvas>
+
+        <div style="height:12px"></div>
+        <label>Vetor antes / depois (apenas quando solicitado)</label>
+        <pre id="arraysView">[vazio]</pre>
+
+        <footer>
+          <div>Observações: use vetores pequenos (<=2000) para execução imediata. Benchmarks maiores podem demorar.</div>
+        </footer>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* --------------------------
+   Funções de ordenação (JS)
+   -------------------------- */
+
+// Bubble Sort (in-place)
+function bubbleSort(arr) {
+  let n = arr.length;
+  // copia para não alterar externo? aqui alteramos o arr recebido
+  for (let i = 0; i < n - 1; i++) {
+    let swapped = false;
+    for (let j = 0; j < n - i - 1; j++) {
+      if (arr[j] > arr[j+1]) {
+        let t = arr[j];
+        arr[j] = arr[j+1];
+        arr[j+1] = t;
+        swapped = true;
+      }
+    }
+    if (!swapped) break; // pequena otimização (melhor caso O(n))
+  }
+}
+
+// Selection Sort (in-place)
+function selectionSort(arr) {
+  let n = arr.length;
+  for (let i = 0; i < n - 1; i++) {
+    let minIdx = i;
+    for (let j = i+1; j < n; j++) {
+      if (arr[j] < arr[minIdx]) minIdx = j;
+    }
+    if (minIdx !== i) {
+      let t = arr[i];
+      arr[i] = arr[minIdx];
+      arr[minIdx] = t;
+    }
+  }
+}
+
+// Merge Sort (functional style)
+function mergeSort(arr) {
+  if (arr.length <= 1) return arr.slice();
+  const mid = Math.floor(arr.length / 2);
+  const left = mergeSort(arr.slice(0, mid));
+  const right = mergeSort(arr.slice(mid));
+  return merge(left, right);
+}
+function merge(a, b) {
+  const res = [];
+  let i=0,j=0;
+  while (i<a.length && j<b.length) {
+    if (a[i] <= b[j]) { res.push(a[i++]); }
+    else { res.push(b[j++]); }
+  }
+  while (i<a.length) res.push(a[i++]);
+  while (j<b.length) res.push(b[j++]);
+  return res;
+}
+
+/* --------------------------
+   Medição de tempo
+   -------------------------- */
+
+function measureSync(fn, arr) {
+  // fn deve ordenar arr (in-place) ou retornar um novo array
+  const copy = arr.slice();
+  const t0 = performance.now();
+  const out = fn(copy);
+  const t1 = performance.now();
+  // garantir que resultado seja array ordenado (fn pode retornar arr ordenado ou novo array)
+  return { time: t1 - t0, result: Array.isArray(out) ? out : copy };
+}
+
+/* --------------------------
+   UI & lógica
+   -------------------------- */
+
+const arrayInput = document.getElementById('arrayInput');
+const generateBtn = document.getElementById('generateBtn');
+const resetBtn = document.getElementById('resetBtn');
+const runSingle = document.getElementById('runSingle');
+const runBenchmark = document.getElementById('runBenchmark');
+const showArrays = document.getElementById('showArrays');
+const statusEl = document.getElementById('status');
+const bubbleTimeEl = document.getElementById('bubbleTime');
+const selectionTimeEl = document.getElementById('selectionTime');
+const mergeTimeEl = document.getElementById('mergeTime');
+const arraysView = document.getElementById('arraysView');
+const sizeInput = document.getElementById('sizeInput');
+const repeatInput = document.getElementById('repeatInput');
+const chart = document.getElementById('chart');
+const downloadCsvBtn = document.getElementById('downloadCsv');
+
+function parseArrayInput() {
+  const raw = arrayInput.value.trim();
+  if (!raw) return [];
+  return raw.split(',').map(s => {
+    const n = Number(s.trim());
+    return Number.isNaN(n) ? 0 : n;
+  });
+}
+
+function randomArray(n, min=-999, max=999) {
+  const a = [];
+  for (let i=0;i<n;i++) a.push(Math.floor(Math.random()*(max-min+1))+min);
+  return a;
+}
+
+generateBtn.addEventListener('click', () => {
+  const n = Math.max(5, Math.min(5000, Number(sizeInput.value) || 100));
+  const arr = randomArray(n, 0, 999);
+  arrayInput.value = arr.join(',');
+  status('Vetor aleatório gerado: ' + n + ' elementos');
+});
+
+resetBtn.addEventListener('click', () => {
+  arrayInput.value = '';
+  arraysView.textContent = '[vazio]';
+  status('Limpo');
+  clearTimes();
+  drawChart([0,0,0]);
+});
+
+function clearTimes() {
+  bubbleTimeEl.textContent = '-';
+  selectionTimeEl.textContent = '-';
+  mergeTimeEl.textContent = '-';
+}
+
+function status(text) {
+  statusEl.textContent = 'Status: ' + text;
+}
+
+/* Rodar uma vez (usa vetor atual) */
+runSingle.addEventListener('click', () => {
+  const base = parseArrayInput();
+  if (base.length === 0) {
+    status('Coloque um vetor ou gere um aleatório.');
+    return;
+  }
+  status('Executando (uma vez)...');
+  // medir cada algoritmo: usar cópia do vetor
+  // Bubble
+  let r = measureSync(bubbleSort, base);
+  bubbleTimeEl.textContent = r.time.toFixed(3);
+  // Selection
+  r = measureSync(selectionSort, base);
+  selectionTimeEl.textContent = r.time.toFixed(3);
+  // Merge (note: mergeSort returns novo array)
+  r = measureSync(mergeSort, base);
+  mergeTimeEl.textContent = r.time.toFixed(3);
+  status('Execução concluída.');
+  drawChart([Number(bubbleTimeEl.textContent), Number(selectionTimeEl.textContent), Number(mergeTimeEl.textContent)]);
+});
+
+/* Mostrar vetores antes/depois */
+showArrays.addEventListener('click', () => {
+  const base = parseArrayInput();
+  if (base.length === 0) {
+    arraysView.textContent = '[vazio]';
+    return;
+  }
+  const before = base.slice();
+  const b = base.slice(); bubbleSort(b);
+  const s = base.slice(); selectionSort(s);
+  const m = mergeSort(base.slice());
+  arraysView.textContent = 'Antes: [' + before.join(', ') + ']\n\n' +
+                           'Bubble (depois): [' + b.join(', ') + ']\n\n' +
+                           'Selection (depois): [' + s.join(', ') + ']\n\n' +
+                           'Merge (depois): [' + m.join(', ') + ']';
+});
+
+/* Benchmark: testa tamanhos variados e repetições */
+runBenchmark.addEventListener('click', async () => {
+  const baseSize = Math.max(5, Math.min(20000, Number(sizeInput.value) || 1000));
+  const reps = Math.max(1, Math.min(50, Number(repeatInput.value) || 3));
+  status('Benchmark: criando cargas e rodando... (isso pode demorar)');
+  clearTimes();
+  arraysView.textContent = '[vazio]';
+
+  // tamanhos crescentes: baseSize/4, baseSize/2, baseSize, baseSize*2 (limitado)
+  const sizes = [
+    Math.max(5, Math.floor(baseSize / 4)),
+    Math.max(5, Math.floor(baseSize / 2)),
+    baseSize,
+    Math.min(20000, baseSize * 2)
+  ];
+  const labels = sizes.map(s => String(s));
+
+  // para cada algoritmo, obter média dos tempos (ms) por tamanho
+  const results = {
+    bubble: [],
+    selection: [],
+    merge: []
+  };
+
+  for (let si=0; si<sizes.length; si++) {
+    const n = sizes[si];
+    // para evitar bloqueio por vetores gigantes, limitamos bubble/selection a n<=5000
+    const useSlow = n <= 5000;
+    // repetir reps vezes e tirar média
+    let sumB=0, sumS=0, sumM=0;
+    for (let r=0; r<reps; r++) {
+      const arr = randomArray(n, 0, 10000);
+      if (useSlow) {
+        sumB += measureSync(bubbleSort, arr).time;
+        sumS += measureSync(selectionSort, arr).time;
+      } else {
+        // se grande demais, pule bubble/selection para não travar o navegador
+        sumB += NaN;
+        sumS += NaN;
+      }
+      sumM += measureSync(mergeSort, arr).time;
+      // permitir que UI atualize (yield)
+      await new Promise(res => setTimeout(res, 20));
+    }
+    results.bubble.push(useSlow ? (sumB / reps) : NaN);
+    results.selection.push(useSlow ? (sumS / reps) : NaN);
+    results.merge.push(sumM / reps);
+    status('Benchmark: concluído para n=' + n);
+  }
+
+  // preencher tabela com valores para o tamanho base (index 2)
+  const idx = 2;
+  bubbleTimeEl.textContent = Number.isFinite(results.bubble[idx]) ? results.bubble[idx].toFixed(3) : 'n/a';
+  selectionTimeEl.textContent = Number.isFinite(results.selection[idx]) ? results.selection[idx].toFixed(3) : 'n/a';
+  mergeTimeEl.textContent = Number.isFinite(results.merge[idx]) ? results.merge[idx].toFixed(3) : 'n/a';
+
+  // desenhar gráfico com médias (apenas último índice por simplicidade) — mas desenhamos barras agrupadas por algoritmo para todos os tamanhos
+  drawGroupedChart(labels, results);
+  status('Benchmark completo.');
+});
+
+/* Desenho do gráfico simples (canvas) */
+function drawChart(values) {
+  const ctx = chart.getContext('2d');
+  const w = chart.width, h = chart.height;
+  ctx.clearRect(0,0,w,h);
+  // background grid
+  ctx.fillStyle = 'rgba(0,0,0,0)';
+  ctx.fillRect(0,0,w,h);
+  const max = Math.max(...values, 1);
+  const barW = Math.max(20, (w - 40) / values.length - 10);
+  for (let i=0;i<values.length;i++) {
+    const val = values[i] || 0;
+    const x = 20 + i * (barW + 20);
+    const barH = (val / max) * (h - 40);
+    // bars
+    ctx.fillStyle = '#6ee7b7';
+    ctx.fillRect(x, h - 20 - barH, barW, barH);
+    // labels
+    ctx.fillStyle = '#cfeff0';
+    ctx.font = '12px sans-serif';
+    ctx.fillText(['Bubble','Selection','Merge'][i], x, h - 2);
+    ctx.fillText(val.toFixed(2) + ' ms', x, h - 26 - barH);
+  }
+}
+
+/* Desenha gráfico agrupado por tamanhos e algoritmos */
+function drawGroupedChart(labels, results) {
+  const ctx = chart.getContext('2d');
+  const w = chart.width, h = chart.height;
+  ctx.clearRect(0,0,w,h);
+  // find max across all values
+  let max = 0;
+  Object.values(results).forEach(arr => arr.forEach(v => { if (Number.isFinite(v) && v>max) max=v; }));
+  max = Math.max(max, 1);
+  const groups = labels.length;
+  const groupW = (w - 40) / groups;
+  const barWidth = Math.min(30, (groupW - 20) / 3);
+
+  for (let gi=0; gi<groups; gi++) {
+    const gx = 20 + gi * groupW;
+    // draw group label
+    ctx.fillStyle = '#cfeff0';
+    ctx.font = '12px sans-serif';
+    ctx.fillText(labels[gi], gx + groupW/2 - 8, h - 2);
+
+    const algs = ['bubble','selection','merge'];
+    for (let ai=0; ai<algs.length; ai++) {
+      const arr = results[algs[ai]];
+      const val = arr[gi];
+      const barH = Number.isFinite(val) ? (val / max) * (h - 60) : 0;
+      const x = gx + 8 + ai * (barWidth + 6);
+      const y = h - 30 - barH;
+      // color per algorithm (subtle)
+      if (ai===0) ctx.fillStyle = '#ff9f43';
+      if (ai===1) ctx.fillStyle = '#60a5fa';
+      if (ai===2) ctx.fillStyle = '#6ee7b7';
+      if (!Number.isFinite(val)) {
+        ctx.fillStyle = 'rgba(255,255,255,0.05)';
+        ctx.fillRect(x, h-40, barWidth, 10);
+        ctx.fillStyle = '#9aa4b2';
+        ctx.fillText('n/a', x, h-48);
+      } else {
+        ctx.fillRect(x, y, barWidth, barH);
+        ctx.fillStyle = '#cfeff0';
+        ctx.fillText(val.toFixed(1) + 'ms', x, y - 6);
+      }
+    }
+  }
+
+  // legend
+  ctx.fillStyle = '#cfeff0';
+  ctx.fillText('Legenda:', w - 200, 16);
+  ctx.fillStyle = '#ff9f43'; ctx.fillRect(w-200,22,12,10); ctx.fillStyle='#cfeff0'; ctx.fillText('Bubble', w-182,32);
+  ctx.fillStyle = '#60a5fa'; ctx.fillRect(w-140,22,12,10); ctx.fillStyle='#cfeff0'; ctx.fillText('Selection', w-122,32);
+  ctx.fillStyle = '#6ee7b7'; ctx.fillRect(w-80,22,12,10); ctx.fillStyle='#cfeff0'; ctx.fillText('Merge', w-62,32);
+}
+
+/* Export CSV */
+downloadCsvBtn.addEventListener('click', () => {
+  const rows = [
+    ['Algoritmo','Tempo(ms)'],
+    ['Bubble', bubbleTimeEl.textContent],
+    ['Selection', selectionTimeEl.textContent],
+    ['Merge', mergeTimeEl.textContent]
+  ];
+  const csv = rows.map(r => r.join(',')).join('\\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'tempos_algoritmos.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  status('CSV gerado.');
+});
+
+// desenho inicial
+drawChart([0,0,0]);
+status('Pronto — insira um vetor ou gere um aleatório e rode os testes.');
+</script>
+</body>
+</html>
